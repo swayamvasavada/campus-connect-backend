@@ -1,0 +1,44 @@
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    groups: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Group" // reference to Club/Project entity
+        }
+    ],
+    isAdmin: {
+        type: Boolean,
+        default: false
+    },
+    // --- Optional Attributes ---
+    profilePic: {
+        type: String,
+        default: "https://p1.hiclipart.com/preview/169/1023/715/login-logo-user-users-group-customer-education-button-typeface-credential-png-clipart.jpg" //default image
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    lastLogin: {
+        type: Date
+    }
+});
+
+module.exports = mongoose.model("User", userSchema);

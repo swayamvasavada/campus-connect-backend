@@ -3,6 +3,8 @@ const app = express();
 
 const initDB = require('./config/db');
 const authRoutes = require('./routes/auth.routes');
+const userRoutes = require('./routes/user.routes');
+const checkAuth = require("./middleware/AuthMiddleware");
 
 if (process.env.NODE_ENV !== "production") require('dotenv').config();
 
@@ -10,6 +12,16 @@ if (process.env.NODE_ENV !== "production") require('dotenv').config();
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+
+// Auth middleware
+app.use(checkAuth);
+
+app.use("/api/user", userRoutes);
+
+// Default 404 handler
+app.use(function(req, res) {
+    res.status(404).json({hasError: true, message: 'Content not found'});
+});
 
 // Error handler middleware
 app.use((err, req, res, next) => {

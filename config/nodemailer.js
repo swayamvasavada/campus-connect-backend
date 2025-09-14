@@ -2,10 +2,10 @@ const nodemailer = require('nodemailer');
 if (process.env.NODE_ENV !== "production") require('dotenv').config();
 
 const transporter = nodemailer.createTransport({
-    service: 'SendGrid',
+    service: 'gmail',
     auth: {
-        user: "apikey",
-        pass: process.env.SENDGRID_API_KEY
+        user: process.env.APPLICATION_EMAIL,
+        pass: process.env.APPLICATION_EMAIL_PASSWORD
     }
 });
 

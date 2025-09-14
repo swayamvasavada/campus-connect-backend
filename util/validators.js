@@ -19,4 +19,11 @@ function validateLoginInput(data) {
   return isValidEmail && isValidPassword;
 }
 
-module.exports = { validateSignupInput, validateLoginInput }
+function validatePasswordInput(password) {
+  const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  const isValidPassword = password && strongPasswordRegex.test(password);
+
+  return isValidPassword;
+}
+
+module.exports = { validateSignupInput, validateLoginInput, validatePasswordInput };

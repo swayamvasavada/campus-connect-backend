@@ -30,7 +30,7 @@ async function signup(req, res, next) {
         await newUser.save();
 
         const token = jwt.signToken({ id: newUser._id }, true);
-        await User.findOneAndUpdate({ email: enteredData.email }, { previousLogin: user.lastLogin, lastLogin: new Date() });
+        await User.findOneAndUpdate({ email: enteredData.email }, { previousLogin: newUser.lastLogin, lastLogin: new Date() });
 
         mailTemplete.welcomeEmail(newUser.email, newUser.name);
 

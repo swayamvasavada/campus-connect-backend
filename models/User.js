@@ -36,10 +36,10 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    previousLogin: {
+    previousLogin: { // This is for user
         type: Date
     },
-    lastLogin: {
+    lastLogin: { // This is for logic of previousLogin
         type: Date
     }
 });

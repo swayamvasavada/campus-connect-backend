@@ -86,6 +86,109 @@ async function welcomeEmail(to, name) {
   console.log("✅ Welcome email sent:", info.messageId);
 }
 
+async function sendActivationEmail(activationToken, email, username) {
+  try {
+    // Plain text fallback
+    const textContent = `
+      Hi ${username},
+
+      Thanks for signing up for Campus Connect 🎉
+
+      To activate your account, please click the link below:
+      ${process.env.FRONTEND_URL}/activate/${activationToken}
+
+      If you didn’t create this account, you can safely ignore this email.
+
+      - Campus Connect Team
+    `;
+
+    // HTML content
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Activate Your Account</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f4f4f7;
+          margin: 0;
+          padding: 0;
+        }
+        .container {
+          max-width: 600px;
+          margin: 20px auto;
+          background: #ffffff;
+          border-radius: 8px;
+          padding: 20px;
+          box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+        }
+        h2 {
+          color: #333333;
+        }
+        p {
+          color: #555555;
+          font-size: 15px;
+          line-height: 1.6;
+        }
+        .button {
+          display: inline-block;
+          margin: 20px 0;
+          padding: 12px 24px;
+          background-color: #4CAF50;
+          color: #ffffff !important;
+          text-decoration: none;
+          font-size: 16px;
+          font-weight: bold;
+          border-radius: 6px;
+        }
+        .footer {
+          margin-top: 20px;
+          font-size: 13px;
+          color: #999999;
+          text-align: center;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h2>Welcome to Campus Connect 🎉</h2>
+        <p>Hi <b>${username}</b>,</p>
+        <p>Thanks for signing up! To start using your account, please verify your email by clicking the button below:</p>
+
+        <a href="${process.env.FRONTEND_URL}/activate/${activationToken}" class="button">Activate Account</a>
+
+        <p>If you didn’t create this account, you can safely ignore this email.</p>
+
+        <div class="footer">
+          <p>© 2025 Campus Connect. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+
+    console.log("Email: ", email);
+    
+    // Mail options
+    const mailOptions = {
+      from: `"Campus Connect" <${process.env.APPLICATION_EMAIL}>`,
+      to: email,
+      subject: "Activate Your Campus Connect Account",
+      text: textContent,  // plain text
+      html: htmlContent,  // HTML
+    };
+
+    // Send mail
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Activation email sent: %s", info.messageId);
+  } catch (error) {
+    console.error("Error sending activation email:", error);
+    throw error;
+  }
+};
+
 async function requestResetEmail(to, name, resetToken) {
   const html = `
   <!DOCTYPE html>
@@ -249,4 +352,4 @@ async function resetConfirmation(to, name) {
   console.log("✅ Password updated email sent:", info.messageId);
 }
 
-module.exports = { welcomeEmail, requestResetEmail, resetConfirmation }
+module.exports = { welcomeEmail, sendActivationEmail, requestResetEmail, resetConfirmation }

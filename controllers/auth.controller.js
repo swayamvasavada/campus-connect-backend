@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const validators = require('../util/validators');
 const mailTemplete = require('../util/mail-templete');
+const accountActivator = require('../util/requestActivation');
 const jwt = require('../util/token');
 
 async function signup(req, res, next) {
@@ -18,7 +19,7 @@ async function signup(req, res, next) {
         //Check for existing user
         const existingUser = await User.findOne({ email: enteredData.email });
         if (existingUser) {
-            return res.status(400).json({ hasError: true, message: "Please fill all details properly" });
+            return res.status(400).json({ hasError: true, message: "User already exists" });
         }
 
         const hashedPassword = await bcrypt.hash(enteredData.password, 12);
@@ -32,7 +33,7 @@ async function signup(req, res, next) {
         const token = jwt.signToken({ id: newUser._id }, true);
         await User.findOneAndUpdate({ email: enteredData.email }, { previousLogin: newUser.lastLogin, lastLogin: new Date() });
 
-        mailTemplete.welcomeEmail(newUser.email, newUser.name);
+        accountActivator(newUser);
 
         return res.status(201).json({ user: newUser, token });
     } catch (error) {
@@ -119,7 +120,7 @@ async function resetPassword(req, res, next) {
         const id = jwt.verifyToken(resetToken).id;
         const user = await User.findById(id);
         await user.updateOne({ password: hashedPassword });
-        
+
         mailTemplete.resetConfirmation(user.email, user.name);
 
         return res.json({

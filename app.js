@@ -1,15 +1,21 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
 
 const initDB = require('./config/db');
+const checkAuth = require("./middleware/AuthMiddleware");
+
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
-const checkAuth = require("./middleware/AuthMiddleware");
+const groupRoutes = require('./routes/group.routes');
 
 if (process.env.NODE_ENV !== "production") require('dotenv').config();
 
 //Middlewares
 app.use(express.json());
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+}));
 
 app.use("/api/auth", authRoutes);
 
@@ -17,10 +23,11 @@ app.use("/api/auth", authRoutes);
 app.use(checkAuth);
 
 app.use("/api/user", userRoutes);
+app.use("/api/groups", groupRoutes);
 
 // Default 404 handler
-app.use(function(req, res) {
-    res.status(404).json({hasError: true, message: 'Content not found'});
+app.use(function (req, res) {
+  res.status(404).json({ hasError: true, message: 'Content not found' });
 });
 
 // Error handler middleware
@@ -32,5 +39,5 @@ app.use((err, req, res, next) => {
 
 // Connect DB first, then start server
 initDB().then(function () {
-    app.listen(process.env.PORT, () => console.log(`Server running on port ${process.env.PORT}`));
+  app.listen(process.env.PORT, () => console.log(`Server running on port ${process.env.PORT}`));
 });

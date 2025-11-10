@@ -31,7 +31,6 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    // --- Optional Attributes ---
     profilePic: {
         type: String,
         default: "https://p1.hiclipart.com/preview/169/1023/715/login-logo-user-users-group-customer-education-button-typeface-credential-png-clipart.jpg" //default image
@@ -45,7 +44,15 @@ const userSchema = new mongoose.Schema({
     },
     lastLogin: { // This is for logic of previousLogin
         type: Date
+    },
+    lastVerificationRequestTime: {
+        type: Date
+    },
+    verificationRequestCount: {
+        type: Number,
+        default: 0
     }
 });
 
-module.exports = mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+module.exports = User;

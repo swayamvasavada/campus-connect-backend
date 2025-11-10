@@ -10,9 +10,9 @@ const Group = require('../models/Groups');
 
 async function resendEmail(req, res, next) {
     try {
-        console.log("Res locals userid: ", res.locals.userId);
+        const data = jwt.verifyToken(req.body.token);
         
-        const user = await User.findById(res.locals.userId, { email: 1, name: 1, isActivated: 1, lastVerificationRequestTime: 1, verificationRequestCount: 1 });
+        const user = await User.findById(data.id, { email: 1, name: 1, isActivated: 1, lastVerificationRequestTime: 1, verificationRequestCount: 1 });
         console.log("User: ", user);
         
         if(!user) return res.status(404).json({

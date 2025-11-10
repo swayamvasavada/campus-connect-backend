@@ -12,6 +12,11 @@ async function resendEmail(req, res, next) {
     try {
         const user = await User.findById(res.locals.userId, { email: 1, name: 1, isActivated: 1, lastVerificationRequestTime: 1, verificationRequestCount: 1 });
 
+        if(!user) return res.status(404).json({
+            hasError: true,
+            message: "User not found"
+        });
+
         if (user.isActivated) return res.json({
             hasError: true,
             message: "Account is already activated"

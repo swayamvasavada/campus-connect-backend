@@ -8,6 +8,7 @@ const checkAuth = require("./middleware/AuthMiddleware");
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const groupRoutes = require('./routes/group.routes');
+const taskRoutes = require('./routes/task.routes');
 
 if (process.env.NODE_ENV !== "production") require('dotenv').config();
 
@@ -24,6 +25,7 @@ app.use(checkAuth);
 
 app.use("/api/user", userRoutes);
 app.use("/api/groups", groupRoutes);
+app.use("/api/task", taskRoutes);
 
 // Default 404 handler
 app.use(function (req, res) {

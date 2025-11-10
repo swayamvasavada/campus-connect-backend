@@ -26,4 +26,18 @@ function validatePasswordInput(password) {
   return isValidPassword;
 }
 
-module.exports = { validateSignupInput, validateLoginInput, validatePasswordInput };
+function validateTaskInput(taskData) {
+  const { title, description, status } = taskData;
+
+  // Allowed statuses
+  const validStatuses = ["Pending", "In progress", "Completed"];
+
+  // Validation checks
+  const isValidTitle = title && title.trim().length >= 3;
+  const isValidDescription = description && description.trim().length >= 5;
+  const isValidStatus = status ? validStatuses.includes(status) : true;
+
+  return isValidTitle && isValidDescription && isValidStatus;
+}
+
+module.exports = { validateSignupInput, validateLoginInput, validatePasswordInput, validateTaskInput };

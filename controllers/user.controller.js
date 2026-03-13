@@ -7,15 +7,17 @@ const jwt = require('../util/token');
 const accountActivator = require('../util/requestActivation');
 const Task = require('../models/Task');
 const Group = require('../models/Groups');
+const Message = require('../models/Message');
+const { default: mongoose } = require('mongoose');
 
 async function resendEmail(req, res, next) {
     try {
         const data = jwt.verifyToken(req.body.token);
-        
+
         const user = await User.findById(data.id, { email: 1, name: 1, isActivated: 1, lastVerificationRequestTime: 1, verificationRequestCount: 1 });
         console.log("User: ", user);
-        
-        if(!user) return res.status(404).json({
+
+        if (!user) return res.status(404).json({
             hasError: true,
             message: "User not found"
         });
@@ -106,8 +108,10 @@ async function getUserSummary(req, res, next) {
         const user = await User.findById(res.locals.userId, { name: 1, isActivated: 1, profilePic: 1, previousLogin: 1 });
         if (!user) return res.status(404).json({ hasError: true, message: "User not found" });
 
+        const unreadCount = await Message.countDocuments({receiverId: new mongoose.Types.ObjectId(res.locals.userId), status: {$ne: "Seen"}});
         return res.json({
             hasError: false,
+            unreadCount: unreadCount,
             user
         });
     } catch (error) {
@@ -153,7 +157,7 @@ async function searchUser(req, res, next) {
             message: "Please fill all details properly"
         });
 
-        const result = await User.find({ name: { $regex: username, $options: 'i' } }, { name: 1, profilePic: 1 });
+        const result = await User.find({ _id: { $ne: res.locals.userId }, name: { $regex: username, $options: 'i' } }, { name: 1, profilePic: 1 });
 
         return res.json({
             hasError: false,

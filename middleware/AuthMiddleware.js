@@ -31,7 +31,6 @@ async function checkAuth(req, res, next) {
         res.locals.userId = data.id;
 
         const accountStatus = await User.findById(data.id, { isActivated: 1 });
-
         if (!accountStatus.isActivated) {
             return res.status(401).json({
                 hasError: true,

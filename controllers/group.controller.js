@@ -288,6 +288,13 @@ async function removeMember(req,res,next) {
             });
         }
 
+        if (!group.moderators.includes(res.locals.userId)) {
+            return res.status(401).json({
+                hasError: true,
+                message: "You are not allowed to remove anyone from this group"
+            })
+        }
+
         if (user.groups.includes(data.groupId)) {
             const newGroups = user.groups.filter(group => !group._id.equals(data.groupId));
             user.groups = newGroups;

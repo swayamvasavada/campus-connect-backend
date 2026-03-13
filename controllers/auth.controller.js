@@ -26,7 +26,8 @@ async function signup(req, res, next) {
         const newUser = new User({
             name: enteredData.name.trim(),
             email: enteredData.email.toLowerCase(),
-            password: hashedPassword
+            password: hashedPassword,
+            profilePic: `https://ui-avatars.com/api/?name=${enteredData.name.trim().replaceAll(" ", "+")}`
         });
         await newUser.save();
 

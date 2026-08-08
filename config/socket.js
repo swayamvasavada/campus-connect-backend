@@ -25,7 +25,7 @@ function connectSocket(io) {
     io.use(socketAuthentication);
     io.on("connection", function (socket) {
         console.log("Socket connected: ", socket.id);
-        messageController.sendPendingMessage(socket);
+        messageController.sendPendingMessage(io, socket);
         chatSocket(io, socket);
 
         socket.on("disconnect", async function () {

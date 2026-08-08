@@ -7,7 +7,7 @@ function chatSocket(io, socket) {
             data.senderId = socket.data.userId;
             const messageData = data;
             // if (!messageData || !messageData._id || !messageData.receiverId || messageData.receiverId === '') throw Error("Invalid data");
-            const acknowledgementData = { messageId: messageData._id };
+            const acknowledgementData = { messageId: messageData._id, senderId: messageData.senderId, receiverId: messageData.receiverId };
             try {
                 const receiverSocketId = await redis.getCache().hGet("userSocketMap", messageData.receiverId);
 
@@ -29,19 +29,19 @@ function chatSocket(io, socket) {
             }
         });
 
-        socket.on("updateMessageStatus", async function (messageData) {
+        socket.on("markMessageSeen", async function (messageData) {
             try {
                 // If Person A sends message and person b reads it, Person B will fire socket event with sender id as Person A (as Person A was sender of message)
                 const messageSenderSocketId = await redis.getCache().hGet("userSocketMap", messageData.senderId);
-                if (io.sockets.sockets.has(messageSenderSocketId)) io.to(messageSenderSocketId).emit('updateMessageStatus', messageData);
+                if (io.sockets.sockets.has(messageSenderSocketId)) io.to(messageSenderSocketId).emit('acknowledgement', messageData);
                 
                 // Update status to DB
-                messageController.updateMessageStatus(messageData);
+                messageController.markMessageSeen(messageData);
             } catch (error) {
                 console.log("Error: ", error);
                 socket.emit("bug", "Something went wrong!");
             }
-        })
+        });
     } catch (error) {
         console.log("Error: ", error);
     }

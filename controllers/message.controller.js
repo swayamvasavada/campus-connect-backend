@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const message = require('../models/Message');
+const redis = require('../config/redis');
 
 async function saveMessage(messageData) {
 
@@ -16,22 +17,36 @@ async function saveMessage(messageData) {
     }
 }
 
-async function sendPendingMessage(socket) {
+async function sendPendingMessage(io, socket) {
     try {
         const pendingMessages = await message.find({ receiverId: socket.data.userId, status: 'Sent' });
         if (pendingMessages.length === 0) return;
 
-        const messageIds = pendingMessages.map(function (msg) {
-            const messageData = {
-                _id: msg._id,
-                senderId: msg.senderId,
-                receiverId: msg.receiverId,
-                content: msg.content
-            }
+        const messageIds = pendingMessages.map(msg => msg._id);
+        await Promise.all(
+            pendingMessages.map(async (msg) => {
+                const messageData = {
+                    _id: msg._id,
+                    senderId: msg.senderId,
+                    receiverId: msg.receiverId,
+                    content: msg.content
+                };
 
-            socket.emit("message", messageData);
-            return msg._id;
-        });
+                socket.emit("message", messageData);
+
+                const acknowledgementData = {
+                    messageId: msg._id,
+                    senderId: msg.senderId,
+                    receiverId: msg.receiverId,
+                    status: 'Delivered'
+                };
+
+                const senderSocketId = await redis.getCache().hGet("userSocketMap", msg.senderId.toString());
+
+                if (senderSocketId != null)
+                    io.to(senderSocketId).emit('acknowledgement', acknowledgementData);
+            })
+        );
 
         await message.updateMany({ _id: { $in: messageIds } }, { $set: { status: 'Delivered' } });
         return;
@@ -157,12 +172,17 @@ async function fetchMessages(req, res, next) {
     }
 }
 
-function updateMessageStatus(messageData) {
+async function markMessageSeen(messageData) {
     try {
-        message.findByIdAndUpdate(messageData._id, { status: messageData.status });
+        console.log("Entering into Message controller => markMessageSeen...");
+        await message.updateMany({
+            senderId: new mongoose.Types.ObjectId(messageData.senderId),
+            receiverId: new mongoose.Types.ObjectId(messageData.receiverId), status: { $ne: 'Seen' }
+        }, { $set: { status: 'Seen' } });
+        console.log("Exiting into Message controller => markMessageSeen...");
     } catch (error) {
-        console.log("Error: ", error);      
+        console.log("Error: ", error);
     }
 }
 
-module.exports = { saveMessage, sendPendingMessage, fetchRecentMessage, fetchMessages, updateMessageStatus };
+module.exports = { saveMessage, sendPendingMessage, fetchRecentMessage, fetchMessages, markMessageSeen };
